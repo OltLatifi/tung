@@ -9,12 +9,12 @@ class Server(models.Model):
 
 class Channel(models.Model):
     name = models.CharField(max_length=255)
-    server_id = models.ForeignKey(Server, on_delete=models.CASCADE)
+    server = models.ForeignKey(Server, on_delete=models.CASCADE)
 
 class Messages(models.Model):
     is_private = models.BooleanField()
-    sender_id = models.ForeignKey(User, on_delete=models.CASCADE)
-    receiver_id = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="receiver")
-    channel_id = models.ForeignKey(Channel, on_delete=models.CASCADE, null=True, blank=True)
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="receiver")
+    channel = models.ForeignKey(Channel, on_delete=models.CASCADE, null=True, blank=True)
     body = models.TextField()
     media = models.ImageField(upload_to=generate_image_directory)
