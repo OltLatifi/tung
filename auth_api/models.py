@@ -8,4 +8,4 @@ class Profile(models.Model):
     photo = models.ImageField(upload_to='profile/')
 
 class User(AbstractUser):
-    profile_id = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
