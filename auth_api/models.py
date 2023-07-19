@@ -1,11 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
-class Profile(models.Model):
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
-    about = models.CharField(max_length=511)
-    photo = models.ImageField(upload_to='profile/')
-
 class User(AbstractUser):
-    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, null=True, blank=True)
+    pass
+
+class Profile(models.Model):
+    first_name = models.CharField(max_length=255, null=True, blank=True)
+    last_name = models.CharField(max_length=255, null=True, blank=True)
+    about = models.CharField(max_length=511, null=True, blank=True)
+    photo = models.ImageField(upload_to='profile/', null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)

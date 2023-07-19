@@ -4,6 +4,7 @@ from .models import User, Profile
 
 class user_register_serializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
         fields = ["username", "email", "password"]
@@ -13,3 +14,8 @@ class user_register_serializer(serializers.ModelSerializer):
         hashed_password = make_password(password)
         validated_data['password'] = hashed_password
         return super().create(validated_data)
+
+class create_user_profile(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = "__all__"
