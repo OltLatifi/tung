@@ -15,7 +15,7 @@ class user_register_serializer(serializers.ModelSerializer):
         validated_data['password'] = hashed_password
         return super().create(validated_data)
 
-class create_user_profile(serializers.ModelSerializer):
+class user_profile_serializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = "__all__"

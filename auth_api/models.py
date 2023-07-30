@@ -9,4 +9,4 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=255, null=True, blank=True)
     about = models.CharField(max_length=511, null=True, blank=True)
     photo = models.ImageField(upload_to='profile/', null=True, blank=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
