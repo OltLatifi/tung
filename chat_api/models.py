@@ -3,7 +3,7 @@ from auth_api.models import User
 from .helpers import generate_image_directory
 
 class Server(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     users = models.ManyToManyField(User)
     admins = models.ManyToManyField(User, related_name="admins")
 

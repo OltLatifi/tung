@@ -23,9 +23,11 @@ def user_register(request):
 def user_profile(request):
     serializer_class = user_profile_serializer
     request.data["user"] = request.user.id
+    response_status = status.HTTP_200_OK
 
     if request.method == "POST":
         serializer = serializer_class(data=request.data)
+        response_status = status.HTTP_201_CREATED
     elif request.method == "PATCH":
         profile = get_object_or_404(Profile, user=request.data["user"])        
         serializer = serializer_class(profile, data=request.data, partial=True)
@@ -33,6 +35,6 @@ def user_profile(request):
     if serializer.is_valid():
         serializer.save()
         profile = get_full_user(serializer.data)
-        return Response({"user": profile}, status=status.HTTP_201_CREATED)
+        return Response({"user": profile}, status=response_status)
     else:
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
