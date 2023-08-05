@@ -10,6 +10,7 @@ router.register(r'channel', channel_viewset, basename='channel')
 urlpatterns = [
     path("server/<int:pk>/join", join_server, name="join-server"),
     path("server/<int:pk>/promote", add_admin, name="add-admin"),
+    path("server/<int:pk>/remove", remove_user, name="remove-user"),
 ]
 
 urlpatterns += router.urls
