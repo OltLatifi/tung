@@ -5,6 +5,7 @@ from .helpers import generate_image_directory
 class Server(models.Model):
     name = models.CharField(max_length=255, unique=True)
     users = models.ManyToManyField(User)
+    # TODO: Maybe a manual m2m relationship is needed to add the admins permissions
     admins = models.ManyToManyField(User, related_name="admins")
 
 class Channel(models.Model):
