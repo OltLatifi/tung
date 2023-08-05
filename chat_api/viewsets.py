@@ -58,6 +58,7 @@ class channel_viewset(viewsets.ViewSet):
         if not server_id:
             return Response({"error": "`server` id not provided in the query params"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # TODO: Refactor this to use an ORM query intead of python comparison
         server_ids = Server.objects.filter(admins=request.user).values_list("id", flat=True)
         server_ids = list(server_ids)
         
