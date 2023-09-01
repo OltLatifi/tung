@@ -18,5 +18,6 @@ class Messages(models.Model):
     receiver = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name="receiver")
     channel = models.ForeignKey(Channel, on_delete=models.CASCADE, null=True, blank=True)
     body = models.TextField()
-    media = models.ImageField(upload_to=generate_image_directory)
+    media = models.ImageField(upload_to=generate_image_directory, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    edited = models.BooleanField(default=False)
