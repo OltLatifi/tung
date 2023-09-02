@@ -1,10 +1,10 @@
 from rest_framework.response import Response
 from rest_framework import status
 
-def generate_image_directory(instance):
+def generate_image_directory(instance, filename):
     if not instance.channel_id:
-        return "chat/private/"
-    return "chat/" + instance.channel.name + instance.channel.server_id
+        return "chat/private/" + filename
+    return f"chat/{instance.channel.name}-{instance.channel.server_id}/{filename}"
 
 def allow_server_mutation(request, server, user_id):
     if not user_id:

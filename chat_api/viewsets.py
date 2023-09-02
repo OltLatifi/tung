@@ -1,10 +1,27 @@
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .serializers import server_serializer, channel_serializer
-from rest_framework import status, viewsets
+from .serializers import server_serializer, channel_serializer, message_serializer
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
-from django.db.models import Q
 from .models import Server, Channel, Messages
+from rest_framework.response import Response
+from rest_framework import status, viewsets
+from django.db.models import Q
+
+def mutation_allowed(request, server_id):
+    if not server_id:
+        return Response({"error": "`server` id not provided in the query params"}, status=status.HTTP_400_BAD_REQUEST)
+
+    # TODO: Refactor this to use an ORM query intead of python comparison
+    server_ids = Server.objects.filter(admins=request.user).values_list("id", flat=True)
+    server_ids = list(server_ids)
+    
+    try:
+        if int(server_id) not in server_ids:
+            return Response({"error": "You are not an admin for the specified server"}, status=status.HTTP_403_FORBIDDEN)
+    except ValueError:
+        return Response({"error": "`server` should be of type int"}, status=status.HTTP_400_BAD_REQUEST)
+    
+    return None
 
 class server_viewset(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
@@ -76,7 +93,7 @@ class channel_viewset(viewsets.ViewSet):
         if not server_id:
             return Response({"error": "`server` id not provided in the query params"}, status=status.HTTP_400_BAD_REQUEST)
 
-        server = Server.objects.get(id=server_id)
+        server = get_object_or_404(Server, id=server_id)
 
         if server.users.filter(pk=request.user.pk).exists() or server.admins.filter(pk=request.user.pk).exists():
             queryset = self.model.objects.filter(
@@ -157,3 +174,41 @@ class channel_viewset(viewsets.ViewSet):
 
         queryset.delete()
         return Response({"server": channel_data})
+
+class message_viewset(viewsets.ViewSet):
+    parser_classes = [MultiPartParser, FormParser]
+    permission_classes = [IsAuthenticated]
+    serializer = message_serializer
+    model = Messages
+
+    def create(self, request):
+        data = request.data.copy()
+        data["sender"] = request.user.id
+
+        if request.data.get("receiver") and request.data.get("channel"):
+            return Response({"error": "Either `reciever `or `channel` need to be on the request"}, status=status.HTTP_400_BAD_REQUEST)
+        elif request.data.get("receiver"):
+            data["is_private"] = True
+        elif request.data.get("channel"):
+            data["is_private"] = False
+        
+        serializer = self.serializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": serializer.data}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+    def list(self, request):
+        # the messages beetween two users
+        # the messages on a channel is found on the channel viewset
+        pass
+
+    def retrieve(self, request, pk=None):
+        pass
+
+    def partial_update(self, request, pk=None):
+        pass
+
+    def destroy(self, request, pk=None):
+        pass
