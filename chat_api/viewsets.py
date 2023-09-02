@@ -123,21 +123,21 @@ class channel_viewset(viewsets.ViewSet):
             return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, pk=None):
-        server_id = request.GET.get("server")
-
-        response = self.mutation_allowed(request, server_id)
-        if response is not None:
-            return response
-        
         # get messages assosciated with the channel
+        channel = get_object_or_404(self.model, pk=pk)
+        users = list(channel.server.users.all()) + list(channel.server.admins.all())
+
+        if not request.user in users:
+            return Response({"error": "You cannot access this channel beacuse you are not part of the server"}, status=status.HTTP_401_UNAUTHORIZED)
+        
         messages = Messages.objects.filter(
             channel=pk,
             is_private=False,
-        ).order_by("created_at")
+        ).order_by("-created_at")
 
-        # TODO: When the message serializer is ready continue this method
-        # TODO: Decide if pinned messages should be done in a seperate view
-        # TODO: Add pagination with backwards infinite scroll
+        serializer = message_serializer(messages, many=True)
+
+        return Response({"messages": serializer.data})
 
     def partial_update(self, request, pk=None):
         server_id = request.GET.get("server")
@@ -219,12 +219,6 @@ class message_viewset(viewsets.ViewSet):
         serializer = self.serializer(messages, many=True)
 
         return Response({"messages": serializer.data}, status=status.HTTP_200_OK)
-
-    def retrieve(self, request, pk=None):
-        pass
-
-    def partial_update(self, request, pk=None):
-        pass
 
     def destroy(self, request, pk=None):
         message = get_object_or_404(self.model, pk=pk)
