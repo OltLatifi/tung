@@ -211,4 +211,23 @@ class message_viewset(viewsets.ViewSet):
         pass
 
     def destroy(self, request, pk=None):
-        pass
+        message = get_object_or_404(self.model, pk=pk)
+        updated_body = ""
+        
+        if message.channel:
+            message_server_admins = message.channel.server.admins.all()
+            if request.user in message_server_admins:
+                updated_body = "Message deleted by admin"
+
+        if request.user.id == message.sender:
+            updated_body = "Message deleted by user"
+
+        if not updated_body:
+            return Response({"error": "You don't have permission to delete this message"}, status=status.HTTP_403_FORBIDDEN)
+
+        message.body = updated_body
+        message.media = None
+        message.save()
+
+        serializer = self.serializer(message)
+        return Response({"message": serializer.data}, status=status.HTTP_200_OK)
