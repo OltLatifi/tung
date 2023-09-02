@@ -219,7 +219,7 @@ class message_viewset(viewsets.ViewSet):
             if request.user in message_server_admins:
                 updated_body = "Message deleted by admin"
 
-        if request.user == message.sender:
+        if request.user.id == message.sender:
             updated_body = "Message deleted by user"
 
         if not updated_body:
