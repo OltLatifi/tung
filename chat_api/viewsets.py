@@ -3,10 +3,12 @@ from .serializers import server_serializer, channel_serializer, message_serializ
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.shortcuts import get_object_or_404
 from .models import Server, Channel, Messages
+from auth_api.models import User
 from rest_framework.response import Response
 from rest_framework import status, viewsets
 from django.db.models import Q
 
+# TODO: Either delete this or delete the method in one of the viewsets and use this method
 def mutation_allowed(request, server_id):
     if not server_id:
         return Response({"error": "`server` id not provided in the query params"}, status=status.HTTP_400_BAD_REQUEST)
@@ -202,7 +204,21 @@ class message_viewset(viewsets.ViewSet):
     def list(self, request):
         # the messages beetween two users
         # the messages on a channel is found on the channel viewset
-        pass
+        user_two_id = request.data.get("receiver")
+
+        user_one = request.user
+        user_two = get_object_or_404(User, pk=user_two_id)
+
+        messages = self.model.objects.filter(
+            is_private=True
+        ).filter(
+            Q(sender=user_one, receiver=user_two) |
+            Q(sender=user_two, receiver=user_one)
+        ).order_by("-created_at")
+
+        serializer = self.serializer(messages, many=True)
+
+        return Response({"messages": serializer.data}, status=status.HTTP_200_OK)
 
     def retrieve(self, request, pk=None):
         pass
@@ -219,7 +235,7 @@ class message_viewset(viewsets.ViewSet):
             if request.user in message_server_admins:
                 updated_body = "Message deleted by admin"
 
-        if request.user.id == message.sender:
+        if request.user == message.sender:
             updated_body = "Message deleted by user"
 
         if not updated_body:
